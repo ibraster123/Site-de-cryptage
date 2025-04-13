@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <title>Cryptage Magique</title>
+
+  <style>
+
+    body {
+
+      font-family: 'Segoe UI', sans-serif;
+
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+
+      color: #fff;
+
+      margin: 0;
+
+      padding: 2rem;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+    }
+
+    h1 {
+
+      font-size: 2.5rem;
+
+      margin-bottom: 1rem;
+
+    }
+
+    .container {
+
+      background-color: rgba(0, 0, 0, 0.4);
+
+      padding: 2rem;
+
+      border-radius: 1rem;
+
+      width: 100%;
+
+      max-width: 600px;
+
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+
+    }
+
+    label, select, input, textarea, button {
+
+      width: 100%;
+
+      margin-top: 1rem;
+
+      font-size: 1rem;
+
+    }
+
+    textarea {
+
+      height: 120px;
+
+      padding: 0.5rem;
+
+      resize: none;
+
+    }
+
+    button {
+
+      background-color: #ffffff33;
+
+      color: white;
+
+      border: 2px solid white;
+
+      padding: 0.5rem;
+
+      border-radius: 0.5rem;
+
+      cursor: pointer;
+
+      transition: background 0.3s;
+
+    }
+
+    button:hover {
+
+      background-color: #ffffff66;
+
+    }
+
+    .result {
+
+      margin-top: 2rem;
+
+      background-color: #fff;
+
+      color: #333;
+
+      padding: 1rem;
+
+      border-radius: 0.5rem;
+
+      word-wrap: break-word;
+
+    }
+
+    .copy-btn {
+
+      margin-top: 1rem;
+
+      background-color: #fff;
+
+      color: #000;
+
+      border: none;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>🔐 Cryptage Magique 🔐</h1>
+
+  <div class="container">
+
+    <label>Message :</label>
+
+    <textarea id="message"></textarea>
+
+
+
+    <label>Méthode :</label>
+
+    <select id="method">
+
+      <option value="rot13">ROT13</option>
+
+      <option value="cesar">César</option>
+
+      <option value="vigenere">Vigenère</option>
+
+      <option value="polybe">Polybe</option>
+
+    </select>
+
+
+
+    <label>Clé (si nécessaire) :</label>
+
+    <input type="text" id="key" placeholder="Ex: 3 ou MOTCLEF">
+
+
+
+    <button onclick="crypter()">Crypter</button>
+
+    <button onclick="decrypter()">Décrypter</button>
+
+
+
+    <div class="result">
+
+      <strong>Résultat :</strong>
+
+      <p id="output"></p>
+
+      <button class="copy-btn" onclick="copierTexte()">📋 Copier</button>
+
+    </div>
+
+  </div>
+
+
+
+  <script>
+
+    function crypter() {
+
+      const msg = document.getElementById("message").value;
+
+      const method = document.getElementById("method").value;
+
+      const key = document.getElementById("key").value;
+
+      let result = "";
+
+
+
+      switch (method) {
+
+        case "rot13":
+
+          result = msg.replace(/[a-zA-Z]/g, c =>
+
+            String.fromCharCode((c <= "Z" ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26)
+
+          );
+
+          break;
+
+        case "cesar":
+
+          const shift = parseInt(key) || 0;
+
+          result = msg.replace(/[a-z]/gi, c => {
+
+            const base = c <= "Z" ? 65 : 97;
+
+            return String.fromCharCode((c.charCodeAt(0) - base + shift + 26) % 26 + base);
+
+          });
+
+          break;
+
+        case "vigenere":
+
+          result = "";
+
+          let j = 0;
+
+          for (let i = 0; i < msg.length; i++) {
+
+            const c = msg[i];
+
+            if (/[a-z]/i.test(c)) {
+
+              const k = key[j % key.length].toLowerCase().charCodeAt(0) - 97;
+
+              const base = c === c.toUpperCase() ? 65 : 97;
+
+              result += String.fromCharCode((c.charCodeAt(0) - base + k) % 26 + base);
+
+              j++;
+
+            } else {
+
+              result += c;
+
+            }
+
+          }
+
+          break;
+
+        case "polybe":
+
+          const square = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+
+          result = msg.toUpperCase().split("").map(c => {
+
+            const ch = c.replace("J", "I");
+
+            const idx = square.indexOf(ch);
+
+            return idx === -1 ? c : `${Math.floor(idx / 5) + 1}${(idx % 5) + 1}`;
+
+          }).join(" ");
+
+          break;
+
+      }
+
+
+
+      document.getElementById("output").textContent = result;
+
+    }
+
+
+
+    function decrypter() {
+
+      const msg = document.getElementById("message").value;
+
+      const method = document.getElementById("method").value;
+
+      const key = document.getElementById("key").value;
+
+      let result = "";
+
+
+
+      switch (method) {
+
+        case "rot13":
+
+          crypter(); return;
+
+        case "cesar":
+
+          const shift = 26 - (parseInt(key) || 0);
+
+          document.getElementById("key").value = shift;
+
+          crypter(); return;
+
+        case "vigenere":
+
+          result = "";
+
+          let j = 0;
+
+          for (let i = 0; i < msg.length; i++) {
+
+            const c = msg[i];
+
+            if (/[a-z]/i.test(c)) {
+
+              const k = key[j % key.length].toLowerCase().charCodeAt(0) - 97;
+
+              const base = c === c.toUpperCase() ? 65 : 97;
+
+              result += String.fromCharCode((c.charCodeAt(0) - base - k + 26) % 26 + base);
+
+              j++;
+
+            } else {
+
+              result += c;
+
+            }
+
+          }
+
+          break;
+
+        case "polybe":
+
+          const square = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+
+          result = msg.match(/\d{2}/g)?.map(pair => {
+
+            const row = parseInt(pair[0]) - 1;
+
+            const col = parseInt(pair[1]) - 1;
+
+            return square[row * 5 + col] || "";
+
+          }).join("") || "";
+
+          break;
+
+      }
+
+      document.getElementById("output").textContent = result;
+
+    }
+
+
+
+    function copierTexte() {
+
+      const text = document.getElementById("output").textContent;
+
+      navigator.clipboard.writeText(text).then(() => alert("Texte copié !"));
+
+    }
+
+  </script>
+
+</body>
+
+</html>
+
+Ajout du fichier index
+html
